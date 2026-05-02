@@ -22,7 +22,7 @@ app.post("/register", async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     const { error } = await supabase
-      .from("users")
+      .from("user")
       .insert([{ email: username, password: hashed, balance: 0 }]);
 
     if (error) return res.status(400).send(error.message);
