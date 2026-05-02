@@ -39,7 +39,7 @@ app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     const { data, error } = await supabase
-      .from("users")
+      .from("user")
       .select("*")
       .eq("email", username)
       .single();
@@ -62,7 +62,7 @@ app.post("/invest", async (req, res) => {
     const { username, amount } = req.body;
 
     const { data } = await supabase
-      .from("users")
+      .from("user")
       .select("*")
       .eq("email", username)
       .single();
@@ -70,7 +70,7 @@ app.post("/invest", async (req, res) => {
     let newBalance = data.balance + amount * 0.2;
 
     await supabase
-      .from("users")
+      .from("user")
       .update({ balance: newBalance })
       .eq("email", username);
 
