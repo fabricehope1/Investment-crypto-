@@ -1,60 +1,84 @@
 const express = require("express");
 const cors = require("cors");
-const app = express();
+const bcrypt = require("bcrypt");
+const { createClient } = require("@supabase/supabase-js");
 
+const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(express.static("public"));
 
-let users = [];
+// 🔑 SUPABASE CONFIG
+const supabase = createClient(
+  "https://mzconpuykzsysdbykdlr.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16Y29ucHV5a3pzeXNkYnlrZGxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2ODIzNzYsImV4cCI6MjA5MzI1ODM3Nn0.bTBcUf7cQS6FGQN_hpTWYlEweWhtkW4rSyItbQtx234"
+);
 
 // REGISTER
-app.post("/register", (req, res) => {
-  const { username, password, ref } = req.body;
+app.post("/register", async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-  const user = {
-    username,
-    password,
-    balance: 0,
-    ref,
-    referrals: []
-  };
+    const hashed = await bcrypt.hash(password, 10);
 
-  users.push(user);
+    const { error } = await supabase
+      .from("users")
+      .insert([{ email: username, password: hashed, balance: 0 }]);
 
-  // referral reward
-  if (ref) {
-    let refUser = users.find(u => u.username === ref);
-    if (refUser) {
-      refUser.balance += 2;
-      refUser.referrals.push(username);
-    }
+    if (error) return res.status(400).send(error.message);
+
+    res.send("Registered");
+  } catch (err) {
+    res.status(500).send("Server error");
   }
-
-  res.send("Registered");
 });
 
 // LOGIN
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
+app.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-  const user = users.find(
-    u => u.username === username && u.password === password
-  );
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", username)
+      .single();
 
-  if (user) res.json(user);
-  else res.status(401).send("Invalid");
+    if (error || !data) return res.status(401).send("Invalid user");
+
+    const match = await bcrypt.compare(password, data.password);
+
+    if (!match) return res.status(401).send("Wrong password");
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
 });
 
 // INVEST
-app.post("/invest", (req, res) => {
-  const { username, amount } = req.body;
+app.post("/invest", async (req, res) => {
+  try {
+    const { username, amount } = req.body;
 
-  let user = users.find(u => u.username === username);
-  user.balance += amount * 0.2;
+    const { data } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", username)
+      .single();
 
-  res.json(user);
+    let newBalance = data.balance + amount * 0.2;
+
+    await supabase
+      .from("users")
+      .update({ balance: newBalance })
+      .eq("email", username);
+
+    res.send("Investment successful");
+  } catch (err) {
+    res.status(500).send("Error");
+  }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server running"));
+app.listen(PORT, "0.0.0.0", () => console.log("Server running"));
