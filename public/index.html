@@ -95,7 +95,7 @@ async function login() {
     document.getElementById("msg").innerText = "Invalid login";
   } else {
     localStorage.setItem("user", JSON.stringify(data));
-    window.location.href = "dashboard.html";
+    window.location.href = "/dashboard.html";
   }
 }
 </script>
