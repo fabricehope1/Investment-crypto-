@@ -22,13 +22,17 @@ app.post("/register", async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
 
     const { error } = await supabase
-      .from("user")
+      .from("user") // ⚠️ match with your table name
       .insert([{ email: username, password: hashed, balance: 0 }]);
 
-    if (error) return res.status(400).send(error.message);
+    if (error) {
+      console.log(error);
+      return res.status(400).send(error.message);
+    }
 
-    res.send("Registered");
+    res.send("Registered successfully");
   } catch (err) {
+    console.log(err);
     res.status(500).send("Server error");
   }
 });
@@ -39,19 +43,24 @@ app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     const { data, error } = await supabase
-      .from("user")
+      .from("user") // ⚠️ match here too
       .select("*")
       .eq("email", username)
       .single();
 
-    if (error || !data) return res.status(401).send("Invalid user");
+    if (error || !data) {
+      return res.status(401).send("User not found");
+    }
 
     const match = await bcrypt.compare(password, data.password);
 
-    if (!match) return res.status(401).send("Wrong password");
+    if (!match) {
+      return res.status(401).send("Wrong password");
+    }
 
     res.json(data);
   } catch (err) {
+    console.log(err);
     res.status(500).send("Server error");
   }
 });
@@ -67,7 +76,7 @@ app.post("/invest", async (req, res) => {
       .eq("email", username)
       .single();
 
-    let newBalance = data.balance + amount * 0.2;
+    let newBalance = (data.balance || 0) + amount * 0.2;
 
     await supabase
       .from("user")
@@ -76,9 +85,12 @@ app.post("/invest", async (req, res) => {
 
     res.send("Investment successful");
   } catch (err) {
-    res.status(500).send("Error");
+    console.log(err);
+    res.status(500).send("Error updating balance");
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => console.log("Server running"));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("Server running");
+});
